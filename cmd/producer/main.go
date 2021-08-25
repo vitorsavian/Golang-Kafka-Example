@@ -10,23 +10,20 @@ import (
 func main() {
 	deliveryChan := make(chan kafka.Event)
 	producer := NewKafkaProducer()
-	Publish("mensagem", "teste", producer, nil, deliveryChan)
+	Publish("transfer", "teste", producer, []byte("transfer"), deliveryChan)
 
 	go DeliveryReport(deliveryChan) // async
 
 	producer.Flush(1000)
-
-	// e := <-deliveryChan
-
-	// msg := e.(*kafka.Message)
-
-	// producer.Flush(1000)
 }
 
 func NewKafkaProducer() *kafka.Producer {
 
 	configMap := &kafka.ConfigMap{
-		"bootstrap.servers": "golang-kafka-example_kafka_1:9092",
+		"bootstrap.servers":   "golang-kafka-example_kafka_1:9092",
+		"delivery.timeout.ms": "0",
+		"acks":                "all",
+		"enable.idempotence":  "true",
 	}
 
 	producer, err := kafka.NewProducer(configMap)
